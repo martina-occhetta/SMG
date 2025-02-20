@@ -63,12 +63,12 @@ def draw_tSNE(embed, y, ppi):
 
 Dataset = ['CPDB', 'IRefIndex', 'PCNet', 'IRefIndex_2015', 'STRINGdb', 'Multinet']
 
-PATH = '/data/civy/SMG/smg_data/'
+PATH = 'smg_data/'
 
 
 
 def get_health(dataset=0):
-    f = h5py.File('/data/civy/SMG/smg_data/'+'{}_multiomics.h5'.format(dataset), 'r') 
+    f = h5py.File('smg_data/'+'{}_multiomics.h5'.format(dataset), 'r') 
     src, dst = np.nonzero(f['network'][:])
     graph = dgl.graph((src, dst))
     graph.ndata['name'] = torch.arange(f['features'][:].shape[0]).unsqueeze(1)
@@ -127,9 +127,9 @@ def get_ppi(dataset=0, essential_gene=False, health_gene=False):
     if health_gene:
         return get_health(dataset)
     elif essential_gene:
-         f = h5py.File('/data/civy/SMG/smg_data/'+'{}_essential_test01_multiomics.h5'.format(dataset), 'r') 
+         f = h5py.File('smg_data/'+'{}_essential_test01_multiomics.h5'.format(dataset), 'r') 
     else:
-        f = h5py.File('/data/civy/SMG/smg_data/'+'{}_multiomics.h5'.format(dataset), 'r')         
+        f = h5py.File('smg_data/'+'{}_multiomics.h5'.format(dataset), 'r')         
     src, dst = np.nonzero(f['network'][:])
     graph = dgl.graph((src, dst))
     graph.ndata['name'] = torch.arange(f['features'][:].shape[0]).unsqueeze(1)
@@ -159,7 +159,7 @@ def get_ppi(dataset=0, essential_gene=False, health_gene=False):
     return graph, (graph.ndata["feat"].shape[1], 1)
 
 def get_new_ppi_c(e=False, h=False):
-    interactions = pd.read_csv('/data/civy/SMG/smg_data/ConsensusPathDB_human_PPI.gz',
+    interactions = pd.read_csv('smg_data/ConsensusPathDB_human_PPI.gz',
                             compression='gzip',
                             header=1,
                             sep='\t',
@@ -184,7 +184,7 @@ def get_new_ppi_c(e=False, h=False):
     _, gene_list_2 = pd.factorize(high_conf_edgelist['partner2'])
 
 
-    feature_list =  pd.read_csv('/data/civy/SMG/smg_data/multiomics_features.tsv', sep='\t')
+    feature_list =  pd.read_csv('smg_data/multiomics_features.tsv', sep='\t')
 
     feature_name = feature_list['Unnamed: 0'].tolist() 
 
@@ -211,15 +211,15 @@ def get_new_ppi_c(e=False, h=False):
     graph = dgl.graph((src, dst))
 
     if e:
-        f = h5py.File('/data/civy/SMG/smg_data/CPDB_essential_test01_multiomics.h5', 'r')
+        f = h5py.File('smg_data/CPDB_essential_test01_multiomics.h5', 'r')
     else:
-        f = h5py.File('/data/civy/SMG/smg_data/CPDB_multiomics.h5', 'r')
+        f = h5py.File('smg_data/CPDB_multiomics.h5', 'r')
     gene_name = f['gene_names'][...,-1].astype(str)
     label = np.logical_or(np.logical_or(f['y_test'][:], f['y_val'][:]), f['y_train'][:]).squeeze(-1)
 
     if h:      
         neg_label = gene_name[label]  
-        label = pd.read_csv('/data/civy/SMG/smg_data/health.tsv', sep='\t').astype(str)['symbol'].tolist()
+        label = pd.read_csv('smg_data/health.tsv', sep='\t').astype(str)['symbol'].tolist()
         mask = [gene_map[g] for g in sorted(list(set(label) & set(gene_list)))]
         np.random.seed(42)
         neg_mask = np.random.choice(sorted(list(set(np.arange(len(gene_list))) - set(mask))), min(len(mask),len(gene_list) - len(mask)) , replace=False).tolist()
@@ -271,7 +271,7 @@ def get_new_ppi_c(e=False, h=False):
     
 def get_new_ppi_I(e=False, h=False):
 
-    high_conf_edgelist = pd.read_csv('/data/civy/SMG/smg_data/IREF_symbols_20190730.tsv', sep='\t')
+    high_conf_edgelist = pd.read_csv('smg_data/IREF_symbols_20190730.tsv', sep='\t')
 
 
     _, gene_list_1 = pd.factorize(high_conf_edgelist['partner1'])
@@ -279,7 +279,7 @@ def get_new_ppi_I(e=False, h=False):
     _, gene_list_2 = pd.factorize(high_conf_edgelist['partner2'])
 
 
-    feature_list =  pd.read_csv('/data/civy/SMG/smg_data/multiomics_features.tsv', sep='\t')
+    feature_list =  pd.read_csv('smg_data/multiomics_features.tsv', sep='\t')
 
 
     feature_name = feature_list['Unnamed: 0'].tolist() 
@@ -312,9 +312,9 @@ def get_new_ppi_I(e=False, h=False):
     #label = pd.read_csv('/home/yancui/ppimae/NCG_cancerdrivers_annotation_supporting_evidence.tsv', sep='\t')['symbol'].tolist()
 
     if e:
-        f = h5py.File('/data/civy/SMG/smg_data/IRefIndex_2015_essential_test01_multiomics.h5', 'r')
+        f = h5py.File('smg_data/IRefIndex_2015_essential_test01_multiomics.h5', 'r')
     else:
-        f = h5py.File('/data/civy/SMG/smg_data/IRefIndex_2015_multiomics.h5', 'r')
+        f = h5py.File('smg_data/IRefIndex_2015_multiomics.h5', 'r')
 
     gene_name = f['gene_names'][...,-1].astype(str)
     label = np.logical_or(np.logical_or(f['y_test'][:], f['y_val'][:]), f['y_train'][:]).squeeze(-1)
@@ -322,7 +322,7 @@ def get_new_ppi_I(e=False, h=False):
 
     if h:      
         neg_label = gene_name[label]  
-        label = pd.read_csv('/data/civy/SMG/smg_data/health.tsv', sep='\t').astype(str)['symbol'].tolist()
+        label = pd.read_csv('smg_data/health.tsv', sep='\t').astype(str)['symbol'].tolist()
         mask = [gene_map[g] for g in sorted(list(set(label) & set(gene_list)))]
         np.random.seed(42)
         neg_mask = np.random.choice(sorted(list(set(np.arange(len(gene_list))) - set(mask))), min(len(mask), len(gene_list) - len(mask)) , replace=False).tolist()
@@ -409,7 +409,8 @@ from sklearn import metrics
 #import zzz
 
 def main(args):
-    device = args.device if args.device >= 0 else "cpu"
+    #device = args.device if args.device >= 0 else "cpu"
+    device = 'cpu'
     seeds = args.seeds
     max_epoch = args.max_epoch
     max_epoch_f = args.max_epoch_f
@@ -763,9 +764,9 @@ if __name__ == "__main__":
     try:
         graph, x, best_model = main(args)
         if args.GE:
-            GNNexplain(graph.to('cuda'), x.to('cuda'), best_model.to('cuda'))
+            GNNexplain(graph, x, best_model)
         if args.IGE:
-            IG(graph.to('cuda'), x.to('cuda'), best_model.to('cuda'))
+            IG(graph, x, best_model)
     except Exception:
         import traceback
         import pdb

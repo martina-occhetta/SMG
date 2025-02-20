@@ -31,8 +31,8 @@ def set_random_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    # torch.cuda.manual_seed(seed)
+    # torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.determinstic = True
 
 
@@ -44,8 +44,8 @@ def build_args():
     parser = argparse.ArgumentParser(description="GAT")
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
     #parser.add_argument("--dataset", type=str, default="cora")
-    parser.add_argument("--device", type=int, default=0)
-    parser.add_argument("--max_epoch", type=int, default=1500,
+    parser.add_argument("--device", default='cpu')
+    parser.add_argument("--max_epoch", type=int, default=100,
                         help="number of training epochs")
     parser.add_argument("--warmup_steps", type=int, default=-1)
 

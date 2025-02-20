@@ -102,23 +102,24 @@ class GCN(nn.Module):
             return self.head(h)
 
     def reset_classifier(self, num_classes, concat=False, datas_dim=16):
+        dtype = next(self.parameters()).dtype  # get the current dtype (should be double)
         if concat:
             self.head = nn.Sequential(
-                nn.Linear(self.out_dim + datas_dim, 256),
+                nn.Linear(self.out_dim + datas_dim, 256).to(dtype),
                 nn.ReLU(),
                 nn.Dropout(0.2),
-                nn.Linear(256, 64),
+                nn.Linear(256, 64).to(dtype),
                 nn.ReLU(),
                 nn.Dropout(0.2),
-                nn.Linear(64, 1)
-            )       
+                nn.Linear(64, 1).to(dtype)
+            )
         else:
             self.head = nn.Sequential(
-            nn.Linear(self.out_dim, 1)
-        )
+                nn.Linear(self.out_dim, 1).to(dtype)
+            )
         self.link_head = nn.Sequential(
-        nn.Linear(self.out_dim, 128)
-        )   
+            nn.Linear(self.out_dim, 128).to(dtype)
+        )
 
 
 
@@ -165,6 +166,8 @@ class GraphConv(nn.Module):
         self.fc.reset_parameters()
 
     def forward(self, graph, feat):
+        # Ensure the input features have the same dtype as the model parameters
+        feat = feat.to(next(self.parameters()).dtype)
         with graph.local_scope():
             aggregate_fn = fn.copy_u('h', 'm')
             # if edge_weight is not None:
@@ -175,7 +178,7 @@ class GraphConv(nn.Module):
             # (BarclayII) For RGCN on heterogeneous graphs we need to support GCN on bipartite.
             feat_src, feat_dst = expand_as_pair(feat, graph)
             # if self._norm in ['left', 'both']:
-            degs = graph.out_degrees().float().clamp(min=1)
+            degs = graph.out_degrees().to(feat_src.dtype).clamp(min=1)
             norm = torch.pow(degs, -0.5)
             shp = norm.shape + (1,) * (feat_src.dim() - 1)
             norm = torch.reshape(norm, shp)
@@ -197,7 +200,7 @@ class GraphConv(nn.Module):
             rst = self.fc(rst)
 
             # if self._norm in ['right', 'both']:
-            degs = graph.in_degrees().float().clamp(min=1)
+            degs = graph.in_degrees().to(feat_dst.dtype).clamp(min=1)
             norm = torch.pow(degs, -0.5)
             shp = norm.shape + (1,) * (feat_dst.dim() - 1)
             norm = torch.reshape(norm, shp)
