@@ -676,7 +676,8 @@ def create_and_save_bar_plot(class_counter, save_path="pathway.png", title="Gene
 def GNNexplain(graph, feat, model):
     explainer = GNNExplainer(model, num_hops=1)
     transform = dgl.ToSimple() 
-    print(genes[graph.ndata['name'][20]])  
+    genes = graph.ndata['name'][20]
+    print(genes)  
     new_center, sg, feat_mask, edge_mask = explainer.explain_node(20, graph, feat)
     dgl.save_graphs('sg.bin', [sg])
     torch.save(edge_mask, 'edge_mask.pt')
